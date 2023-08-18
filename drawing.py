@@ -51,7 +51,7 @@ def points_draw(chains, SURFACE, COLOR):
 	#	for point in chain.points:
 	#		SURFACE.fill(COLOR, ((point.x, point.y), (point.width, point.height)))
 
-def line_draw(chains, SURFACE, COLOR):
+def line_draw(chains, width, SURFACE, COLOR):
 	i_c = 0
 	while(i_c < len(chains)):
 		while(True):
@@ -71,7 +71,7 @@ def line_draw(chains, SURFACE, COLOR):
 				#print("p2.x: " + str(p2.x))
 				#print("p2.y: " + str(p2.y))
 
-				pygame.draw.line(SURFACE, COLOR, (p1.x, p1.y), (p2.x, p2.y))
+				pygame.draw.line(SURFACE, COLOR, (p1.x, p1.y), (p2.x, p2.y), width=width)
 				i_1 = i_1 + 1
 				i_2 = i_2 + 1
 	
@@ -82,16 +82,18 @@ def line_draw(chains, SURFACE, COLOR):
 			break
 		i_c = i_c + 1
 
+#TODO:
+#	Anti-Aliasing?
+#	Adding more than just drawing
+#		- Adding a bar at the top to select more than one mode
+#		- Allow the user to move points
+#			- Lines should just already follow the points.
+#	Scalable grid
+
 def main():
 	loop = True
-	pos1 = (0,0)
-	pos2 = (0,0)
-
-	pos_first = True
-	pos1_on = False
-	pos2_on = False
-
 	chains = []
+	line_width = 1
 
 	while loop:
 		for event in pygame.event.get():
@@ -99,16 +101,27 @@ def main():
 				pygame.quit()
 				sys.exit()
 			if event.type == pygame.MOUSEBUTTONDOWN:
+
+				#if(event.button == 4 and line_width < 9):
+				#	line_width = line_width + 1
+				#elif(event.button == 5 and line_width > 1):
+				#	line_width = line_width - 1
+
+				#print(line_width)
 				mouse_state = pygame.mouse.get_pressed()
 
+				p = pygame.mouse.get_pos()
 				if(mouse_state[2] == 1):
-					p = pygame.mouse.get_pos()
+					#if(p[1] <= 30):
 					point = Point(p[0], p[1], 2, 2)
 					chain = Chain()
 					chain.update_points(point)
 					chains.append(chain)
-				elif(1 in mouse_state):
-					p = pygame.mouse.get_pos()
+					#else:
+					#	#Fix
+					#	if((p[0] >= 3 and p[0] <= 28) and (p[1] >= 3 and p[1] <= 28)):
+					#		print("Selection")
+				else:
 					point = Point(p[0], p[1], 2, 2)
 					if chains:
 						chains[-1].update_points(point)
@@ -116,7 +129,6 @@ def main():
 						chain = Chain()
 						chain.update_points(point)
 						chains.append(chain)
-					print(chains[-1].points[0].x)
 
 				#p = pygame.mouse.get_pos()
 				#point = Point(p[0], p[1], 2, 2)
@@ -127,17 +139,19 @@ def main():
 		key = pygame.key.get_pressed()
 		if key[pygame.K_SPACE]:
 			chains = []
-
-		print(len(chains))
+		if key[pygame.K_ESCAPE]:
+			loop = False
 
 		#Rendering
 		WINDOW.fill(BACKGROUND)
+		#pygame.draw.line(WINDOW, BLACK, (0,30), (800,30), width=2)
+		#pygame.draw.rect(WINDOW, BLACK, pygame.Rect(3,3,25,25), width=2)
 		points_draw(chains, WINDOW, BLACK)
 		#for p in points:
 		#	WINDOW.fill(BLACK, ((p.x,p.y), (p.width,p.height)))
 
 		if chains:
-			line_draw(chains, WINDOW, BLACK)
+			line_draw(chains, line_width, WINDOW, BLACK)
 
 		pygame.display.update()
 		fpsClock.tick(FPS)
